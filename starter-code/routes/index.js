@@ -106,7 +106,6 @@ router.get('/profile/:usersId/edit', routeGuard, (req, res, next) => {
 
 router.post('/profile/:usersId/edit', routeGuard, (req, res, next) => {
   const usersId = req.params.usersId;
-  console.log("REQ.BOOOOODY",req.body.name, usersId);
   User.findByIdAndUpdate(usersId, {
     name: req.body.name
     
