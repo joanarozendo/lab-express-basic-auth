@@ -7,8 +7,14 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const sassMiddleware = require('node-sass-middleware');
 const serveFavicon = require('serve-favicon');
+const mongoose = require('mongoose');
+const expressSession = require('express-session');
+const connectMongo = require('connect-mongo');
+
+const MongoStore = connectMongo(expressSession);
 
 const indexRouter = require('./routes/index');
+const User = require('./models/user');
 
 const app = express();
 
@@ -28,6 +34,43 @@ app.use(sassMiddleware({
   outputStyle: process.env.NODE_ENV === 'development' ? 'nested' : 'compressed',
   sourceMap: true
 }));
+
+app.use(cookieParser());
+
+app.use(
+  expressSession({
+    secret: process.env.SESSION_SECRET,
+    resave: true,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 60 * 60 * 24 * 15,
+      sameSite: true,
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== 'development'
+    },
+    store: new MongoStore({
+      mongooseConnection: mongoose.connection,
+      ttl: 60 * 60 * 24
+    })
+  })
+);
+
+app.use((req, res, next) => {
+  const userId = req.session.user;
+  if (userId) {
+    User.findById(userId)
+      .then(user => {
+        req.user = user;
+        res.locals.user = req.user;
+        next();
+      })
+      .catch(error => {
+        next(error);
+      });
+  } else {
+    next();
+  }
+});
 
 app.use('/', indexRouter);
 

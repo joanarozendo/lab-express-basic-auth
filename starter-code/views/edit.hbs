@@ -1,0 +1,15 @@
+<h1>PROFILE</h1>
+
+<ul>
+  <li>Username: {{user.username}}</li>
+  <li>ID: {{user._id}}</li>
+  <form action="/profile/{{user._id}}/edit" method="POST">
+    <textarea name="name" maxlength="40" placeholder="Insert text">{{ user.name }}</textarea>
+    <button>Confirm</button>
+  </form>
+
+</ul>
+
+
+
+
